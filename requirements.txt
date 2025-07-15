@@ -1,0 +1,9 @@
+transformers[torch]
+accelerate
+datasets
+pytrec_eval
+deepspeed==0.14.5
+sentencepiece
+protobuf
+flash-attn==2.8.0.post2
+wandb
