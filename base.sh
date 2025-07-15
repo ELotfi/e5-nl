@@ -9,11 +9,14 @@ export WANDB_MODE=disabled
 
 
 
-train_data="\
-    /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/retrieval \
-    /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/sts/sts.jsonl \
-    /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/classification-no_in_batch_neg \
-    /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/clustering-no_in_batch_neg "
+# train_data="\
+#     /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/retrieval \
+#     /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/sts/sts.jsonl \
+#     /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/classification-no_in_batch_neg \
+#     /home/ubuntu/projects/RetData/FlagEmbedding/examples/finetune/embedder/example_data/clustering-no_in_batch_neg "
+python build_data.py
+
+train_data="data/"
 
 # set large epochs and small batch size for testing
 num_train_epochs=4
@@ -43,7 +46,7 @@ data_args="\
 "
 
 training_args="\
-    --output_dir ./test_encoder_only_multilingual-e5-base \
+    --output_dir output/test_encoder_only_multilingual-e5-base \
     --overwrite_output_dir \
     --learning_rate 1e-5 \
     --fp16 \
