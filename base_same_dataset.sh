@@ -5,13 +5,13 @@ export WANDB_MODE=disabled
 #     ../example_data/sts/sts.jsonl \
 #     ../example_data/classification-no_in_batch_neg \
 #     ../example_data/clustering-no_in_batch_neg "
-    --output_dir ./test_encoder_only_base_bge-large-en-v1.5_sd \
-    --overwrite_output_dir \
-    --deepspeed ../../ds_stage0.json \
-    --kd_loss_type kl_div \
+    # --output_dir ./test_encoder_only_base_bge-large-en-v1.5_sd \
+    # --overwrite_output_dir \
+    # --deepspeed ../../ds_stage0.json \
+    # --kd_loss_type kl_div \
 
 
-python build_data.py
+python build_data.py --use_syn_data False --use_old_data True
 train_data="data/"
 # set large epochs and small batch size for testing
 num_train_epochs=1
@@ -50,6 +50,7 @@ training_args="\
     --fp16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
+	--gradient_accumulation_steps 1 \
     --dataloader_drop_last True \
     --warmup_ratio 0.1 \
     --logging_steps 10 \
