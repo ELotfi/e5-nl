@@ -15,9 +15,8 @@ OLD_DATASETS = {
 }
 
 CNV_DATASETS = {
-	"CHAT-NL": {'id': "BramVanroy/dutch_chat_datasets", 'ratio':1, 'suf':''},
-	"HERMES-NL": {'id':"BramVanroy/Openhermes-2.5-dutch-46k-format", 'ratio':1, 'suf':''},
-	"ULTRA-NL": {'id':"BramVanroy/ultrachat_200k_dutch", 'ratio':1, 'suf':''}
+	"QA3-NL": {'id': "Ehsanl/qa3_nl_trip", 'ratio':1, 'suf':''},
+	"ULTRA-NL": {'id':"Ehsanl/ultrac_nl_trip", 'ratio':1, 'suf':''}
 }
 
 os.makedirs('data', exist_ok=True)
@@ -29,8 +28,6 @@ def _transform(sample):
 	return sample
 
 
-def process_dataset_old(data_conf):
-	data_id, ratio, suffix = data_conf
 
 
 
@@ -45,14 +42,17 @@ def main(args):
 			task_dataset = task_dataset.map(_transform, ).remove_columns(['task_type', 'task_desc'])
 			task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
 	if args.use_old_data:
-		for data_name, (data_id, ratio, suffix) in OLD_DATASETS.items():		
+		for data_name, flds in OLD_DATASETS.items():
+			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
 			dataset = load_dataset(data_id)['train'].shuffle()
-			processed_dataset = dataset.select(range(int(len(dataset)*ratio)))
+			if ratio < 1: processed_dataset = dataset.select(range(int(len(dataset)*ratio)))
 			processed_dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
 	if args.use_cnv_data:
-		for data_name, (data_id, ratio, suffix) in OLD_DATASETS.items():
-			pass
-
+		for data_name, flds in CNV_DATASETS.items():
+			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']
+			dataset = load_dataset(data_id)['train'].shuffle()
+			if ratio < 1: processed_dataset = dataset.select(range(int(len(dataset)*ratio)))
+			processed_dataset.to_json(f'data/cnv_{data_name}{suffix}.jsonl')
 
 
 

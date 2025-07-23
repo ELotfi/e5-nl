@@ -59,7 +59,7 @@ training_args="\
     --save_steps 0.25 \
 	--push_to_hub True \
 	--hub_model_id Ehsanl/RetNLbge_e5base \
-	--push_to_hub_token \
+	--hub_token \
     --negatives_cross_device \
     --temperature 0.02 \
     --sentence_pooling_method mean \
