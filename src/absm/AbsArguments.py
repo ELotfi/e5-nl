@@ -34,6 +34,9 @@ class AbsEmbedderModelArguments:
         default_factory=lambda: os.getenv('HF_TOKEN', None),
         metadata={"help": "The token to use when accessing the model."}
     )
+    add_lora: bool = field(default=False, metadata={"help": "add lora adapters"})
+    lora_rank: int = field(default=16, metadata={"help": "lora adapter rank"})
+    lora_alpha: int = field(default=32, metadata={"help": "Freeze the parameters of position embeddings"})    
 
 
 @dataclass
@@ -135,3 +138,7 @@ class AbsEmbedderTrainingArguments(TrainingArguments):
     normalize_embeddings: bool = field(default=True, metadata={"help": "whether to normalize the embeddings"})
     sub_batch_size: Optional[int] = field(default=None, metadata={"help": "sub batch size for training"})
     kd_loss_type: str = field(default='kl_div', metadata={"help": "the loss type for knowledge distillation. Available options: kl_div, m3_kd_loss. Default: kl_div.", "choices": ['kl_div', 'm3_kd_loss']})
+
+
+
+

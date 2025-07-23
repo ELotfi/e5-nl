@@ -4,7 +4,7 @@ from transformers import (
     AutoModel, AutoConfig,
     AutoTokenizer, PreTrainedTokenizer
 )
-
+from peft import LoraConfig, TaskType, get_peft_model
 from .absm import AbsEmbedderRunner, AbsEmbedderModel, EmbedderTrainerCallbackForDataRefresh
 from .modeling import BiEncoderOnlyEmbedderModel
 from .trainer import EncoderOnlyEmbedderTrainer
@@ -44,6 +44,18 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
             trust_remote_code=self.model_args.trust_remote_code,
         )
         logger.info('Config: %s', config)
+        if self.model_args.add_lora:
+        # peft config and wrapping
+            print('adding lora ...')
+            peft_config = LoraConfig(
+                r=self.model_args.lora_rank,
+                lora_alpha=self.model_args.lora_alpha,
+                bias="none",
+                task_type=TaskType.FEATURE_EXTRACTION,
+                target_modules=["key", "query", "value"],
+            )
+            base_model = get_peft_model(base_model, peft_config)
+            base_model.print_trainable_parameters()
 
         model = BiEncoderOnlyEmbedderModel(
             base_model,

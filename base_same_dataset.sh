@@ -11,11 +11,11 @@ export WANDB_MODE=disabled
     # --kd_loss_type kl_div \
 
 
-python build_data.py --use_syn_data False --use_old_data True
+python build_data.py --use_syn_data True --use_old_data False --use_cnv_data False
 train_data="data/"
 # set large epochs and small batch size for testing
 num_train_epochs=1
-per_device_train_batch_size=128
+per_device_train_batch_size=32
 
 # set num_gpus to 2 for testing
 num_gpus=1
@@ -27,6 +27,9 @@ fi
 model_args="\
     --model_name_or_path intfloat/multilingual-e5-base \
     --cache_dir $HF_HUB_CACHE \
+	--add_lora True \
+	--lora_rank 16 \
+	--lora_alpha 32 \
 "
 
 data_args="\
@@ -46,7 +49,7 @@ data_args="\
 "
 
 training_args="\
-    --learning_rate 1e-5 \
+    --learning_rate 1e-4 \
     --fp16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
@@ -57,9 +60,9 @@ training_args="\
     --save_total_limit 4 \
     --save_strategy steps \
     --save_steps 0.25 \
-	--push_to_hub True \
+	--push_to_hub False \
 	--hub_model_id Ehsanl/RetNLbge_e5base \
-	--hub_token \
+	--hub_token \	
     --negatives_cross_device \
     --temperature 0.02 \
     --sentence_pooling_method mean \

@@ -10,23 +10,6 @@ from src.modeling import BiEncoderOnlyEmbedderModel
 from src.trainer import EncoderOnlyEmbedderTrainer
 from src.runner import EncoderOnlyEmbedderRunner
 
-# __all__ = [
-#     'EncoderOnlyEmbedderModelArguments',
-#     'EncoderOnlyEmbedderDataArguments',
-#     'EncoderOnlyEmbedderTrainingArguments',
-#     'BiEncoderOnlyEmbedderModel',
-#     'EncoderOnlyEmbedderTrainer',
-#     'EncoderOnlyEmbedderRunner',
-# ]
-
-
-
-# from . import (
-#     EncoderOnlyEmbedderDataArguments,
-#     EncoderOnlyEmbedderTrainingArguments,
-#     EncoderOnlyEmbedderModelArguments,
-#     EncoderOnlyEmbedderRunner,
-# )
 
 
 def main():
