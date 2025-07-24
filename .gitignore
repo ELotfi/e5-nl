@@ -1,3 +1,5 @@
 data/
 output/
 trainer_output/
+*.pyc
+*.out

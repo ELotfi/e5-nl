@@ -34,6 +34,8 @@ class AbsEmbedderModelArguments:
         default_factory=lambda: os.getenv('HF_TOKEN', None),
         metadata={"help": "The token to use when accessing the model."}
     )
+    load_bf16: bool = field(default=True, metadata={"help": "load model in bf16"})
+    use_flash_attention: bool = field(default=False, metadata={"help": "use flash attention"})    
     add_lora: bool = field(default=False, metadata={"help": "add lora adapters"})
     lora_rank: int = field(default=16, metadata={"help": "lora adapter rank"})
     lora_alpha: int = field(default=32, metadata={"help": "Freeze the parameters of position embeddings"})    

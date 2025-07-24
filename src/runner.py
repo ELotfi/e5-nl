@@ -4,6 +4,7 @@ from transformers import (
     AutoModel, AutoConfig,
     AutoTokenizer, PreTrainedTokenizer
 )
+import torch
 from peft import LoraConfig, TaskType, get_peft_model
 from .absm import AbsEmbedderRunner, AbsEmbedderModel, EmbedderTrainerCallbackForDataRefresh
 from .modeling import BiEncoderOnlyEmbedderModel
@@ -32,7 +33,9 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
             self.model_args.model_name_or_path,
             cache_dir=self.model_args.cache_dir,
             token=self.model_args.token,
-            trust_remote_code=self.model_args.trust_remote_code
+            trust_remote_code=self.model_args.trust_remote_code,
+            attn_implementation = 'flash_attention_2' if self.model_args.use_flash_attention else None,
+            torch_dtype = torch.bfloat16 if self.model_args.load_bf16 else 'auto'
         )
 
         num_labels = 1
@@ -52,7 +55,8 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
                 lora_alpha=self.model_args.lora_alpha,
                 bias="none",
                 task_type=TaskType.FEATURE_EXTRACTION,
-                target_modules=["key", "query", "value"],
+                target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "down_proj", "up_proj", "gate_proj"],
+                inference_mode=False
             )
             base_model = get_peft_model(base_model, peft_config)
             base_model.print_trainable_parameters()

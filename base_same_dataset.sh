@@ -11,11 +11,11 @@ export WANDB_MODE=disabled
     # --kd_loss_type kl_div \
 
 
-python build_data.py --use_syn_data True --use_old_data False --use_cnv_data False
-train_data="data/"
+#python build_data.py --use_syn_data True --use_old_data False --use_cnv_data False
+train_data="data/syn/"
 # set large epochs and small batch size for testing
 num_train_epochs=1
-per_device_train_batch_size=32
+per_device_train_batch_size=4
 
 # set num_gpus to 2 for testing
 num_gpus=1
@@ -25,8 +25,10 @@ if [ -z "$HF_HUB_CACHE" ]; then
 fi
 
 model_args="\
-    --model_name_or_path intfloat/multilingual-e5-base \
+    --model_name_or_path ChocoLlama/ChocoLlama-2-7B-tokentrans-base \
     --cache_dir $HF_HUB_CACHE \
+	--load_bf16 True \
+	--use_flash_attention True \
 	--add_lora True \
 	--lora_rank 16 \
 	--lora_alpha 32 \
@@ -50,7 +52,7 @@ data_args="\
 
 training_args="\
     --learning_rate 1e-4 \
-    --fp16 \
+    --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
 	--gradient_accumulation_steps 1 \
@@ -60,9 +62,9 @@ training_args="\
     --save_total_limit 4 \
     --save_strategy steps \
     --save_steps 0.25 \
-	--push_to_hub False \
-	--hub_model_id Ehsanl/RetNLbge_e5base \
-	--hub_token \	
+	--push_to_hub True \
+	--hub_model_id Ehsanl/tests \
+	--hub_token \
     --negatives_cross_device \
     --temperature 0.02 \
     --sentence_pooling_method mean \
