@@ -45,14 +45,14 @@ def main(args):
 		for data_name, flds in OLD_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
 			dataset = load_dataset(data_id)['train'].shuffle()
-			if ratio < 1: processed_dataset = dataset.select(range(int(len(dataset)*ratio)))
-			processed_dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
+			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
+			dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']
 			dataset = load_dataset(data_id)['train'].shuffle()
-			if ratio < 1: processed_dataset = dataset.select(range(int(len(dataset)*ratio)))
-			processed_dataset.to_json(f'data/cnv_{data_name}{suffix}.jsonl')
+			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
+			dataset.to_json(f'data/cnv_{data_name}{suffix}.jsonl')
 
 
 
