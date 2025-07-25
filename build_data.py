@@ -30,7 +30,7 @@ def add_prompts(query, task_desc:str):
 
 
 def main(args):
-	is_llm = any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) 
+	is_llm = False if args.is_llm == None else any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) 
 
 	def _transform(sample):
 		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'])
@@ -64,9 +64,10 @@ def main(args):
 if __name__ == '__main__':
 	parser = ArgumentParser()
 	parser.add_argument('--model', default=None)
-	parser.add_argument('--use_syn_data', default=True)
-	parser.add_argument('--use_old_data', default=True)
-	parser.add_argument('--use_cnv_data', default=True)
+	parser.add_argument('--use_syn_data')
+	parser.add_argument('--use_old_data')
+	parser.add_argument('--use_cnv_data')
 	parser.add_argument('--token', default=None)
+	parser.add_argument('--is_llm', default=None)
 	args = parser.parse_args()
 	main(args)

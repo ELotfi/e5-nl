@@ -15,14 +15,14 @@ export WANDB_MODE=disabled
 	# --passage_instruction_format '{}{}' \
 
 num_train_epochs=1
-per_device_train_batch_size=4
+per_device_train_batch_size=32
 num_gpus=1
-model_name_or_path="Qwen/Qwen3-1.7B"
+model_name_or_path="Qwen/Qwen3-0.6B-Base"
 hf_hub_token=''
 
-python build_data.py --use_syn_data True --use_old_data False --use_cnv_data False --model $model_name_or_path --token $hf_hub_token
+#python build_data.py --use_syn_data True --use_old_data True --use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False
 
-train_data="data/syn-qwen/"
+train_data="data/"
 # set large epochs and small batch size for testing
 
 
@@ -35,7 +35,7 @@ model_args="\
     --cache_dir $HF_HUB_CACHE \
 	--load_bf16 True \
 	--use_flash_attention True \
-	--add_lora True \
+	--add_lora False \
 	--lora_rank 16 \
 	--lora_alpha 32 \
 "
@@ -48,16 +48,20 @@ data_args="\
     --passage_max_len 512 \
     --pad_to_multiple_of 8 \
     --same_dataset_within_batch True \
+	--query_instruction_for_retrieval 'query: ' \
+	--passage_instruction_for_retrieval 'passage: ' \
+    --query_instruction_format '{}{}' \
+	--passage_instruction_format '{}{}' \
     --small_threshold 0 \
     --drop_threshold 0 \
 "
 
 training_args="\
-    --learning_rate 1e-4 \
+    --learning_rate 2e-5 \
     --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
-	--gradient_accumulation_steps 1 \
+	--gradient_accumulation_steps 8 \
     --dataloader_drop_last True \
     --warmup_ratio 0.1 \
     --logging_steps 10 \
@@ -65,12 +69,13 @@ training_args="\
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id Ehsanl/tests \
+	--hub_model_id Ehsanl/qw600m_syn_old \
 	--hub_token $hf_hub_token \
     --negatives_cross_device \
     --temperature 0.02 \
     --sentence_pooling_method mean \
     --normalize_embeddings True \
+	--deepspeed ds_stage0.json \
 "
 
 cmd="torchrun --nproc_per_node $num_gpus \

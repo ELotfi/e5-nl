@@ -7,3 +7,4 @@ sentencepiece
 protobuf
 flash-attn==2.8.0.post2
 wandb
+peft
