@@ -3,3 +3,6 @@ output/
 trainer_output/
 *.pyc
 *.out
+chackpoints/
+*.ipynb
+.vscode

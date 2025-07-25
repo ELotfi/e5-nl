@@ -9,23 +9,29 @@ export WANDB_MODE=disabled
     # --overwrite_output_dir \
     # --deepspeed ../../ds_stage0.json \
     # --kd_loss_type kl_div \
+	# --query_instruction_for_retrieval 'query: ' \
+	# --passage_instruction_for_retrieval 'passage: ' \
+    # --query_instruction_format '{}{}' \
+	# --passage_instruction_format '{}{}' \
 
-
-#python build_data.py --use_syn_data True --use_old_data False --use_cnv_data False
-train_data="data/syn/"
-# set large epochs and small batch size for testing
 num_train_epochs=1
 per_device_train_batch_size=4
-
-# set num_gpus to 2 for testing
 num_gpus=1
+model_name_or_path="Qwen/Qwen3-1.7B"
+hf_hub_token=''
+
+python build_data.py --use_syn_data True --use_old_data False --use_cnv_data False --model $model_name_or_path --token $hf_hub_token
+
+train_data="data/syn-qwen/"
+# set large epochs and small batch size for testing
+
 
 if [ -z "$HF_HUB_CACHE" ]; then
     export HF_HUB_CACHE="$HOME/.cache/huggingface/hub"
 fi
 
 model_args="\
-    --model_name_or_path ChocoLlama/ChocoLlama-2-7B-tokentrans-base \
+    --model_name_or_path $model_name_or_path \
     --cache_dir $HF_HUB_CACHE \
 	--load_bf16 True \
 	--use_flash_attention True \
@@ -41,10 +47,6 @@ data_args="\
     --query_max_len 512 \
     --passage_max_len 512 \
     --pad_to_multiple_of 8 \
-    --query_instruction_for_retrieval 'query: ' \
-	--passage_instruction_for_retrieval 'passage: ' \
-    --query_instruction_format '{}{}' \
-	--passage_instruction_format '{}{}' \
     --same_dataset_within_batch True \
     --small_threshold 0 \
     --drop_threshold 0 \
@@ -64,7 +66,7 @@ training_args="\
     --save_steps 0.25 \
 	--push_to_hub True \
 	--hub_model_id Ehsanl/tests \
-	--hub_token \
+	--hub_token $hf_hub_token \
     --negatives_cross_device \
     --temperature 0.02 \
     --sentence_pooling_method mean \

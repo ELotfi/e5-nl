@@ -22,24 +22,28 @@ CNV_DATASETS = {
 os.makedirs('data', exist_ok=True)
 
 
-def _transform(sample):
-	sample['pos'] = [sample['pos']]
-	sample['neg'] = [sample['neg']]
-	return sample
-
-
-
-
-
+def add_prompts(query, task_desc:str):
+	if task_desc == '': task_desc = 'Given the following text, find semantically similar texts.'
+	task_desc = task_desc.replace('Given a', 'Given the following').replace('Identifying', 'Identify')
+	query = f'Instruct: {task_desc} \n Query:{query}'
+	return query
 
 
 def main(args):
+	is_llm = any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) 
+
+	def _transform(sample):
+		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'])
+		sample['pos'] = [sample['pos']]
+		sample['neg'] = [sample['neg']]
+		return sample
+	
 	print('Building the datasets ...')
 	if args.use_syn_data:
-		raw_dataset = load_dataset('Ehsanl/SynRet', data_files=SYN_TRAIN_FILE)['train'].rename_column('q', 'query')
+		raw_dataset = load_dataset('Ehsanl/SynRet', data_files=SYN_TRAIN_FILE, token=args.token)['train'].rename_column('q', 'query')
 		for task, task_suffix in SYN_TASK_TYPES.items():
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
-			task_dataset = task_dataset.map(_transform, ).remove_columns(['task_type', 'task_desc'])
+			task_dataset = task_dataset.map(_transform).remove_columns(['task_type', 'task_desc'])
 			task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
@@ -59,8 +63,10 @@ def main(args):
 
 if __name__ == '__main__':
 	parser = ArgumentParser()
+	parser.add_argument('--model', default=None)
 	parser.add_argument('--use_syn_data', default=True)
 	parser.add_argument('--use_old_data', default=True)
 	parser.add_argument('--use_cnv_data', default=True)
+	parser.add_argument('--token', default=None)
 	args = parser.parse_args()
 	main(args)
