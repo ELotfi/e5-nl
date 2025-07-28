@@ -64,9 +64,9 @@ def main(args):
 if __name__ == '__main__':
 	parser = ArgumentParser()
 	parser.add_argument('--model', default=None)
-	parser.add_argument('--use_syn_data')
-	parser.add_argument('--use_old_data')
-	parser.add_argument('--use_cnv_data')
+	parser.add_argument('--use_syn_data', default=False)
+	parser.add_argument('--use_old_data', default=False)
+	parser.add_argument('--use_cnv_data', default=False)
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
 	args = parser.parse_args()
