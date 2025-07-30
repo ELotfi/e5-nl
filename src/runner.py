@@ -55,7 +55,7 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
                 lora_alpha=self.model_args.lora_alpha,
                 bias="none",
                 task_type=TaskType.FEATURE_EXTRACTION,
-                target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "down_proj", "up_proj", "gate_proj"],
+                target_modules= 'all-linear', # ["q_proj", "v_proj", "k_proj", "o_proj", "down_proj", "up_proj", "gate_proj"],
                 inference_mode=False
             )
             base_model = get_peft_model(base_model, peft_config)
