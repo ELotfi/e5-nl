@@ -6,8 +6,8 @@ from argparse import ArgumentParser
 SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
 SYN_TASK_TYPES = {'sl':'', 'ls':'-no_in_batch_neg', 'sts':'', 'll':'', 'ss':''}
 OLD_DATASETS = {
-	"HotpotQA-NL": {'id': "Ehsanl/hpqa_nl_trip", 'ratio':1, 'suf':''},
-	"FEVER-NL": {'id':"Ehsanl/fv_nl_trip", 'ratio':1, 'suf':''},
+	"HotpotQA-NL": {'id': "Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'hpqa'},
+	"FEVER-NL": {'id':"Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'fevr'},
 	"MSMARCO-NL": {'id':"Ehsanl/msm_nl_trip", 'ratio':.6, 'suf':''},
 	#"NQ-NL": ("clips/beir-nl-nq",1),
 	"SQuAD-NL": {'id':"Ehsanl/sq_nl_trip", 'ratio':1, 'suf':'-no_in_batch_neg'},
@@ -48,7 +48,8 @@ def main(args):
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
-			dataset = load_dataset(data_id)['train'].shuffle()
+			data_dir = flds.get('config', 'data')
+			dataset = load_dataset(data_id, data_dir=data_dir, split='train').shuffle()
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
 			dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
 	if args.use_cnv_data:
