@@ -15,12 +15,12 @@ export WANDB_MODE=disabled
 	# --passage_instruction_format '{}{}' \
 
 num_train_epochs=1
-per_device_train_batch_size=1536
+per_device_train_batch_size=1024
 num_gpus=1
-model_name_or_path="intfloat/multilingual-e5-base"
+model_name_or_path="utter-project/EuroLLM-1.7B-Instruct"
 hf_hub_token=''
 
-#python build_data.py  --use_old_data True --use_syn_data True #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+python build_data.py  --use_old_data True  --model $model_name_or_path #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -35,7 +35,7 @@ model_args="\
     --cache_dir $HF_HUB_CACHE \
 	--trust_remote_code True \
 	--load_bf16 True \
-	--use_flash_attention False \
+	--use_flash_attention True \
 	--add_lora True \
 	--lora_rank 16 \
 	--lora_alpha 32 \
@@ -45,14 +45,10 @@ data_args="\
     --train_data $train_data \
     --cache_path ~/.cache \
     --train_group_size 2 \
-    --query_max_len 480 \
+    --query_max_len 512 \
     --passage_max_len 512 \
     --pad_to_multiple_of 8 \
     --same_dataset_within_batch True \
-	--query_instruction_for_retrieval 'query: ' \
-	--passage_instruction_for_retrieval 'passage: ' \
-    --query_instruction_format '{}{}' \
-	--passage_instruction_format '{}{}' \
     --small_threshold 0 \
     --drop_threshold 0 \
 "
@@ -71,13 +67,13 @@ training_args="\
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5_base_lora_os \
+	--hub_model_id  Ehsanl/eurollm17_old_syn \
 	--hub_token $hf_hub_token \
     --negatives_cross_device \
     --temperature 0.02 \
     --sentence_pooling_method mean \
     --normalize_embeddings True \
-	--deepspeed ds_stage0.json \
+	--deepspeed ds_stage1.json \
 "
 
 cmd="torchrun --nproc_per_node $num_gpus \

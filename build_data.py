@@ -37,15 +37,15 @@ def add_prompts(query, task_desc:str, data_type, dataset_name=None):
 		if task_desc == '': task_desc = 'Given the following text, find semantically similar texts.'
 		task_desc = task_desc.replace('Given a', 'Given the following').replace('Identifying', 'Identify') + ' (in Dutch)'
 	elif data_type == 'old':
-		task_desc = prompts[data_name]
+		task_desc = prompts[dataset_name]
 
 	query = f'Instruct: {task_desc} \n Query:{query}'
 	return query
 
 
 def main(args):
-	is_llm = False if args.is_llm == None else any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) 
-	
+	is_llm = any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) 
+	print(is_llm)
 
 	def _transform_syn(sample):
 		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
@@ -54,7 +54,7 @@ def main(args):
 		return sample
 
 	def _add_prompt(sample, dataset_name):
-		sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'old', )
+		sample['query'] = add_prompts(sample['query'], None, data_type='old', dataset_name=dataset_name)
 		return sample
 	
 	print('Building the datasets ...')
@@ -72,7 +72,7 @@ def main(args):
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
 			if is_llm: 
 				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
-				dataset = dataset.map(_add_prompt)
+				dataset = dataset.map(tasked_prompt)
 			dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
