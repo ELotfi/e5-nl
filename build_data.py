@@ -1,6 +1,7 @@
 from datasets import load_dataset
 import os
 from argparse import ArgumentParser
+from functools import partial
 
 
 SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
@@ -22,20 +23,38 @@ CNV_DATASETS = {
 os.makedirs('data', exist_ok=True)
 
 
-def add_prompts(query, task_desc:str):
-	if task_desc == '': task_desc = 'Given the following text, find semantically similar texts.'
-	task_desc = task_desc.replace('Given a', 'Given the following').replace('Identifying', 'Identify')
+prompts={
+	"HotpotQA-NL": "Given a multi-hop question in Dutch, retrieve Dutch documents that can help answer the question",
+	"FEVER-NL": "Given a claim in Dutch, retrieve Dutch documents that support or refute the claim",
+	"SQuAD-NL": "Given a question in Dutch, retrieve Dutch Wikipedia passages that answer the question",
+	"MSMARCO-NL": "Given a web search query in Dutch, retrieve relevant Dutch passages that answer the query",
+	"Quora-NL": "Given a question in Dutch, retrieve Dutch questions that are semantically equivalent to the given question"
+}
+
+
+def add_prompts(query, task_desc:str, data_type, dataset_name=None):
+	if data_type == 'syn':
+		if task_desc == '': task_desc = 'Given the following text, find semantically similar texts.'
+		task_desc = task_desc.replace('Given a', 'Given the following').replace('Identifying', 'Identify') + ' (in Dutch)'
+	elif data_type == 'old':
+		task_desc = prompts[data_name]
+
 	query = f'Instruct: {task_desc} \n Query:{query}'
 	return query
 
 
 def main(args):
 	is_llm = False if args.is_llm == None else any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) 
+	
 
-	def _transform(sample):
-		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'])
+	def _transform_syn(sample):
+		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
 		sample['pos'] = [sample['pos']]
 		sample['neg'] = [sample['neg']]
+		return sample
+
+	def _add_prompt(sample, dataset_name):
+		sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'old', )
 		return sample
 	
 	print('Building the datasets ...')
@@ -43,7 +62,7 @@ def main(args):
 		raw_dataset = load_dataset('Ehsanl/SynRet', data_files=SYN_TRAIN_FILE, token=args.token)['train'].rename_column('q', 'query')
 		for task, task_suffix in SYN_TASK_TYPES.items():
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
-			task_dataset = task_dataset.map(_transform).remove_columns(['task_type', 'task_desc'])
+			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
 			task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
@@ -51,6 +70,9 @@ def main(args):
 			data_dir = flds.get('config', 'data')
 			dataset = load_dataset(data_id, data_dir=data_dir, split='train').shuffle()
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
+			if is_llm: 
+				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
+				dataset = dataset.map(_add_prompt)
 			dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
