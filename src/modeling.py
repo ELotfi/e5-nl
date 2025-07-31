@@ -1,7 +1,7 @@
 import logging
 
 import torch
-from transformers import AutoModel, PreTrainedModel, PreTrainedTokenizer
+from transformers import AutoModel, PreTrainedModel, PreTrainedTokenizer, AutoConfig
 
 from .absm import AbsEmbedderModel
 
@@ -27,6 +27,7 @@ class BiEncoderOnlyEmbedderModel(AbsEmbedderModel):
     def __init__(
         self,
         base_model: PreTrainedModel,
+		config:AutoConfig,
         tokenizer: PreTrainedTokenizer = None,
         negatives_cross_device: bool = False,
         temperature: float = 1.0,
@@ -43,6 +44,7 @@ class BiEncoderOnlyEmbedderModel(AbsEmbedderModel):
             sub_batch_size=sub_batch_size,
             kd_loss_type=kd_loss_type,
         )
+        self.config=config
         self.sentence_pooling_method = sentence_pooling_method
         self.normalize_embeddings = normalize_embeddings
         self.cross_entropy = torch.nn.CrossEntropyLoss(reduction='mean')

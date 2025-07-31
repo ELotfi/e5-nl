@@ -63,6 +63,7 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
 
         model = BiEncoderOnlyEmbedderModel(
             base_model,
+			config=config,
             tokenizer=tokenizer,
             negatives_cross_device=self.training_args.negatives_cross_device,
             temperature=self.training_args.temperature,
