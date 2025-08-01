@@ -1,0 +1,7 @@
+EuroLLM1.7:
+	4 * H100 NVL (96GB)
+	ip: 38.99.105.116
+	pdbs: 256
+	ds: s1
+	fp16
+	time: ~3h
