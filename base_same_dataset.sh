@@ -13,11 +13,12 @@ export WANDB_MODE=disabled
 	# --passage_instruction_for_retrieval 'passage: ' \
     # --query_instruction_format '{}{}' \
 	# --passage_instruction_format '{}{}' \
+	# last_token
 
 num_train_epochs=1
 per_device_train_batch_size=256
 num_gpus=4
-model_name_or_path="utter-project/EuroLLM-1.7B-Instruct"
+model_name_or_path="Qwen/Qwen3-Embedding-0.6B"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
 python build_data.py  --use_syn_data True --use_old_data True --model $model_name_or_path #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
@@ -67,11 +68,11 @@ training_args="\
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/eurollm17_old_syn \
+	--hub_model_id  Ehsanl/qwen3_emb_4b_old_syn \
 	--hub_token $hf_hub_token \
     --negatives_cross_device \
     --temperature 0.02 \
-    --sentence_pooling_method mean \
+    --sentence_pooling_method last_token \
     --normalize_embeddings True \
 	--deepspeed ds_stage1.json \
 "

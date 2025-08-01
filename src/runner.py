@@ -29,6 +29,9 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
             token=self.model_args.token,
             trust_remote_code=self.model_args.trust_remote_code
         )
+        if not tokenizer.pad_token: tokenizer.pad_token = tokenizer.eos_token
+        if self.model_args.model_name_or_path.startswith('Qwen'): tokenizer.padding_side = 'left'
+        
         base_model = AutoModel.from_pretrained(
             self.model_args.model_name_or_path,
             cache_dir=self.model_args.cache_dir,
