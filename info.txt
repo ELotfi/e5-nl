@@ -5,3 +5,10 @@ EuroLLM1.7:
 	ds: s1
 	fp16
 	time: ~3h
+
+Qwen-Emb-.6B:
+	2 * H200 (140GB)
+	pdbs: 512
+	ds: s1
+	fp16
+	time: 3.5h
