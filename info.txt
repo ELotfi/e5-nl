@@ -3,12 +3,26 @@ EuroLLM1.7:
 	ip: 38.99.105.116
 	pdbs: 256
 	ds: s1
-	fp16
+	fp16/FA/GC
+	lora: 16/32
+	lr: 1e-4	
 	time: ~3h
 
 Qwen-Emb-.6B:
 	2 * H200 (140GB)
 	pdbs: 512
 	ds: s1
-	fp16
+	fp16/FA/GC
+	lora: 16/32
+	lr: 5e-5
 	time: 3.5h
+
+me5-large-instruct:
+	2 * H200 (140GB)
+	ip: 208.64.254.178
+	pdbs: 512
+	ds: s1
+	fp16/GC
+	lora: 16/32
+	lr: 5e-5
+	time: 1.5h
