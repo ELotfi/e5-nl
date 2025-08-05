@@ -26,3 +26,12 @@ me5-large-instruct:
 	lora: 16/32
 	lr: 5e-5
 	time: 1.5h
+
+me5-large-instruct:
+	1 * H200 (140GB)
+	pdbs: 96
+	ds: s1
+	fp16/GC-24
+	lora: 16/32
+	lr: 1e-4
+	time: 2h
