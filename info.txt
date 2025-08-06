@@ -26,6 +26,7 @@ me5-large-instruct:
 	lora: 16/32
 	lr: 5e-5
 	time: 1.5h
+	hf: Ehsanl/me5_large_inst_lora_os
 
 me5-large-instruct:
 	1 * H200 (140GB)
@@ -35,3 +36,15 @@ me5-large-instruct:
 	lora: 16/32
 	lr: 1e-4
 	time: 2h
+	hf: Ehsanl/me5_large_inst_lora_os_96_24
+
+me5-large-instruct:
+	4 * RTX 5090 (32GB)
+	pdbs: 128
+	ds: s1
+	fp16/GC-8
+	lora: -
+	lr: 8e-6
+	time: 1:30h
+	steps: 274
+	hf: Ehsanl/me5_large_inst_full_os_96_24
