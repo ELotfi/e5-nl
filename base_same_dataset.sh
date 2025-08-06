@@ -58,7 +58,7 @@ data_args="\
 
 training_args="\
     --learning_rate 5e-5 \
-    --fp16 \
+    --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
 	--gradient_accumulation_steps 1 \
@@ -66,6 +66,7 @@ training_args="\
 	--negatives_cross_device \
     --dataloader_drop_last True \
     --warmup_ratio 0.2 \
+	--weight_decay 0.1 \
     --logging_steps 10 \
     --save_total_limit 4 \
     --save_strategy steps \
