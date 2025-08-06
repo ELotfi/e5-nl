@@ -8,8 +8,8 @@ SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
 SYN_TASK_TYPES = {'sl':'', 'ls':'-no_in_batch_neg', 'sts':'', 'll':'', 'ss':''}
 OLD_DATASETS = {
 	"HotpotQA-NL": {'id': "Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'hpqa'},
-	"FEVER-NL": {'id':"Ehsanl/fv_nl_trip", 'ratio':1, 'suf':'' },
-	"MSMARCO-NL": {'id':"Ehsanl/msm_nl_trip", 'ratio':.5, 'suf':''},
+	"FEVER-NL": {'id':"Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'fevr' },
+	"MSMARCO-NL": {'id':"Ehsanl/msm_nl_trip", 'ratio':.6, 'suf':''},
 	#"NQ-NL": ("clips/beir-nl-nq",1),
 	"SQuAD-NL": {'id':"Ehsanl/sq_nl_trip", 'ratio':1, 'suf':'-no_in_batch_neg'},
 	"Quora-NL": {'id':"Ehsanl/qr_nl_trip", 'ratio':.3, 'suf':''}

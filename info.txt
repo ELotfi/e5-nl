@@ -2,6 +2,7 @@ EuroLLM1.7:
 	4 * H100 NVL (96GB)
 	ip: 38.99.105.116
 	pdbs: 256
+	data: os
 	ds: s1
 	fp16/FA/GC
 	lora: 16/32
@@ -11,6 +12,7 @@ EuroLLM1.7:
 Qwen-Emb-.6B:
 	2 * H200 (140GB)
 	pdbs: 512
+	data: os
 	ds: s1
 	fp16/FA/GC
 	lora: 16/32
@@ -21,6 +23,7 @@ me5-large-instruct:
 	2 * H200 (140GB)
 	ip: 208.64.254.178
 	pdbs: 512
+	data: os
 	ds: s1
 	fp16/GC
 	lora: 16/32
@@ -31,6 +34,7 @@ me5-large-instruct:
 me5-large-instruct:
 	1 * H200 (140GB)
 	pdbs: 96
+	data: os
 	ds: s1
 	fp16/GC-24
 	lora: 16/32
@@ -41,6 +45,7 @@ me5-large-instruct:
 me5-large-instruct:
 	4 * RTX 5090 (32GB)
 	pdbs: 128
+	data: os
 	ds: s1
 	fp16/GC-8
 	lora: -
@@ -48,3 +53,16 @@ me5-large-instruct:
 	time: 1:30h
 	steps: 274
 	hf: Ehsanl/me5_large_inst_full_os_96_24
+
+
+me5-large-instruct:
+	2 * H200 (140GB)
+	ip: 149.7.4.152
+	pdbs: 1024
+	data: o
+	ds: s1
+	fp16/GC/GA
+	lora: 16/32
+	lr: 5e-5
+	time: 1h
+	hf: Ehsanl/me5_large_inst_lora_old
