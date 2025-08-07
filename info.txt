@@ -55,7 +55,7 @@ me5-large-instruct:
 	hf: Ehsanl/me5_large_inst_full_os_96_24
 
 
-me5-large-instruct:
+me5-large-instruct (failed):
 	2 * H200 (140GB)
 	ip: 149.7.4.152
 	pdbs: 1024
@@ -66,3 +66,51 @@ me5-large-instruct:
 	lr: 5e-5
 	time: 1h
 	hf: Ehsanl/me5_large_inst_lora_old
+
+me5-large-instruct :
+	4 * H100 (80GB)
+	ip: 203.154.134.53
+	pdbs: 512
+	data: o
+	ds: s1
+	bf16/GC/WD
+	lora: 16/32
+	lr: 5e-5
+	time: 30m
+	hf: Ehsanl/me5_large_inst_lora_old
+
+me5-large-instruct :
+	4 * H100 (80GB)
+	ip: 203.154.134.53
+	pdbs: 512
+	data: o
+	ds: s1
+	bf16/GC/WD
+	lora: 32/64/DO0.05
+	lr: 2e-5
+	time: 30m
+	hf: Ehsanl/me5_large_inst_lora_old_r32
+
+me5-large-instruct :
+	4 * H100 (80GB)
+	ip: 203.154.134.53
+	pdbs: 512
+	data: o
+	ds: s1
+	bf16/GC/WD
+	lora: 64/128/DO0.1
+	lr:  5e-5
+	time: 35m
+	hf: Ehsanl/me5_large_inst_lora_old_r64
+
+me5-large-instruct :
+	4 * H100 (80GB)
+	ip: 203.154.134.53
+	pdbs: 512
+	data: o
+	ds: s1
+	bf16/GC/WD
+	lora: 8/16/DO0.05
+	lr:  5e-5
+	time: 35m
+	hf: Ehsanl/me5_large_inst_lora_old_r8
