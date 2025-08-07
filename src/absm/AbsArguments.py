@@ -39,7 +39,7 @@ class AbsEmbedderModelArguments:
     add_lora: bool = field(default=False, metadata={"help": "add lora adapters"})
     lora_rank: int = field(default=16, metadata={"help": "lora adapter rank"})
     lora_alpha: int = field(default=32, metadata={"help": "Freeze the parameters of position embeddings"})    
-
+    lora_dropout: float = field(default=0.0, metadata={"help": "Freeze the parameters of position embeddings"}) 
 
 @dataclass
 class AbsEmbedderDataArguments:

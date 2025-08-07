@@ -18,12 +18,12 @@ export WANDB_MODE=disabled
 
 
 num_train_epochs=1
-per_device_train_batch_size=1024
-num_gpus=2
+per_device_train_batch_size=512
+num_gpus=4
 model_name_or_path="intfloat/multilingual-e5-large-instruct"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
-#python build_data.py  --use_old_data True --model $model_name_or_path --is_llm True  #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+python build_data.py  --use_old_data True --model $model_name_or_path --is_llm True  #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -40,8 +40,9 @@ model_args="\
 	--load_bf16 True \
 	--use_flash_attention False \
 	--add_lora True \
-	--lora_rank 16 \
-	--lora_alpha 32 \
+	--lora_rank 32 \
+	--lora_alpha 64 \
+	--lora_dropout 0.05 \
 "
 
 data_args="\
@@ -57,13 +58,13 @@ data_args="\
 "
 
 training_args="\
-    --learning_rate 5e-5 \
+    --learning_rate 1e-4 \
     --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
 	--gradient_accumulation_steps 1 \
 	--gradient_checkpointing True \
-	--negatives_cross_device \
+	--negatives_cross_device True \
     --dataloader_drop_last True \
     --warmup_ratio 0.2 \
 	--weight_decay 0.1 \
@@ -72,12 +73,12 @@ training_args="\
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5_large_inst_lora_old \
+	--hub_model_id  Ehsanl/me5_large_inst_lora_old_r32 \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
     --normalize_embeddings True \
-	--deepspeed ds_stage3.json \
+	--deepspeed ds_stage1.json \
 "
 
 cmd="torchrun --nproc_per_node $num_gpus \

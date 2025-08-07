@@ -56,6 +56,7 @@ class EncoderOnlyEmbedderRunner(AbsEmbedderRunner):
             peft_config = LoraConfig(
                 r=self.model_args.lora_rank,
                 lora_alpha=self.model_args.lora_alpha,
+				lora_dropout=self.model_args.lora_dropout,
                 bias="none",
                 task_type=TaskType.FEATURE_EXTRACTION,
                 target_modules= 'all-linear', # ["q_proj", "v_proj", "k_proj", "o_proj", "down_proj", "up_proj", "gate_proj"],
