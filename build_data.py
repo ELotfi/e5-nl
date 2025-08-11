@@ -51,7 +51,6 @@ def main(args):
 		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
 		sample['pos'] = [sample['pos']]
 		sample['neg'] = [sample['neg']]
-		if sample['neg_scores'] == [0.0]: sample['neg_scores'] = [1e-4]
 		return sample
 
 	def _add_prompt(sample, dataset_name):
@@ -61,6 +60,7 @@ def main(args):
 	print('Building the datasets ...')
 	if args.use_syn_data:
 		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
+		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x: x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)
 		for task, task_suffix in SYN_TASK_TYPES.items():
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
 			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
@@ -93,5 +93,7 @@ if __name__ == '__main__':
 	parser.add_argument('--use_cnv_data', default=False)
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
+	parser.add_argument('--filter_by_dpn', default=False)
+	parser.add_argument('--dpn_thresh', default=0.5)
 	args = parser.parse_args()
 	main(args)
