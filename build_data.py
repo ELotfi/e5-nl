@@ -51,6 +51,7 @@ def main(args):
 		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
 		sample['pos'] = [sample['pos']]
 		sample['neg'] = [sample['neg']]
+		if sample['neg_scores'] == [0.0]: sample['neg_scores'] = [1e-4]
 		return sample
 
 	def _add_prompt(sample, dataset_name):

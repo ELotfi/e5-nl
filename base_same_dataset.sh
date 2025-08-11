@@ -18,12 +18,12 @@ export WANDB_MODE=disabled
 
 
 num_train_epochs=1
-per_device_train_batch_size=512
-num_gpus=4
+per_device_train_batch_size=64
+num_gpus=2
 model_name_or_path="intfloat/multilingual-e5-large-instruct"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
-python build_data.py  --use_syn_data True --model $model_name_or_path --is_llm True  #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+#python build_data.py  --use_syn_data True --model $model_name_or_path --is_llm True --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -63,8 +63,8 @@ training_args="\
     --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
-	--gradient_accumulation_steps 1 \
-	--gradient_checkpointing True \
+	--gradient_accumulation_steps 8 \
+	--gradient_checkpointing False \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
     --warmup_ratio 0.2 \
@@ -74,7 +74,7 @@ training_args="\
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5_large_inst_lora16_syn_kd \
+	--hub_model_id  Ehsanl/me5_large_inst_lora16_syn_kd_mix\
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
