@@ -18,8 +18,8 @@ export WANDB_MODE=disabled
 
 
 num_train_epochs=1
-per_device_train_batch_size=64
-num_gpus=2
+per_device_train_batch_size=512
+num_gpus=1
 model_name_or_path="intfloat/multilingual-e5-large-instruct"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
@@ -62,18 +62,18 @@ training_args="\
     --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
-	--gradient_accumulation_steps 8 \
-	--gradient_checkpointing False \
+	--gradient_accumulation_steps 1 \
+	--gradient_checkpointing True \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
     --warmup_ratio 0.2 \
 	--weight_decay 0.1 \
-    --logging_steps 10 \
+    --logging_steps 1 \
     --save_total_limit 4 \
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5_large_inst_lora16_syn_kd_mix\
+	--hub_model_id  Ehsanl/me5_large_inst_lora16_syn_flt_01_08_no_ls \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \

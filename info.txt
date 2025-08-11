@@ -139,3 +139,29 @@ me5-large-instruct :
 	lr:  1e-4
 	time: 35m
 	hf: Ehsanl/me5_large_inst_lora16_syn_kd_mix
+
+
+me5-large-instruct :
+	1 * H200 (140GB)
+	ip: -
+	pdbs: 512 (GA1)
+	data: s-ranked, filtered delta <.7, no ls
+	ds: s1
+	bf16/GC/WD
+	lora: 8/16/DO0.05
+	lr:  1e-4
+	time: 15m
+	hf: Ehsanl/me5_large_inst_lora16_syn_flt_07
+
+
+me5-large-instruct :
+	1 * H200 (140GB)
+	ip: -
+	pdbs: 512 (GA1)
+	data: s-ranked, .1<filtered delta <.8, no ls
+	ds: s1
+	bf16/GC/WD
+	lora: 16/32/DO0.05
+	lr:  1e-4
+	time: 15m
+	hf: Ehsanl/me5_large_inst_lora16_syn_flt_01_08_no_ls

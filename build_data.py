@@ -60,11 +60,11 @@ def main(args):
 	print('Building the datasets ...')
 	if args.use_syn_data:
 		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
-		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x: x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)
+		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x:(x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh))
 		for task, task_suffix in SYN_TASK_TYPES.items():
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
 			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
-			task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
+			if len(task_dataset)>0: task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
@@ -94,6 +94,6 @@ if __name__ == '__main__':
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
 	parser.add_argument('--filter_by_dpn', default=False)
-	parser.add_argument('--dpn_thresh', default=0.5)
+	parser.add_argument('--dpn_thresh', default=0.8)
 	args = parser.parse_args()
 	main(args)
