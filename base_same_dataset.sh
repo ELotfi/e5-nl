@@ -23,7 +23,7 @@ num_gpus=1
 model_name_or_path="intfloat/multilingual-e5-large-instruct"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
-python build_data.py  --use_syn_data True --model $model_name_or_path --is_llm True --filter_by_dpn True --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+#python build_data.py  --use_syn_data True --model $model_name_or_path --is_llm True --filter_by_dpn True --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -55,6 +55,7 @@ data_args="\
     --same_dataset_within_batch True \
     --small_threshold 0 \
     --drop_threshold 0 \
+	--knowledge_distillation True \
 "
 
 training_args="\
@@ -73,7 +74,7 @@ training_args="\
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5_large_inst_lora16_syn_flt_01_08_no_ls \
+	--hub_model_id  Ehsanl/me5_large_inst_lora16_kd_syn_flt_01_08_no_ls \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
