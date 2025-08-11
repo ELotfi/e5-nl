@@ -59,7 +59,7 @@ def main(args):
 	
 	print('Building the datasets ...')
 	if args.use_syn_data:
-		raw_dataset = load_dataset('Ehsanl/SynRet', data_files=SYN_TRAIN_FILE, token=args.token)['train'].rename_column('q', 'query')
+		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
 		for task, task_suffix in SYN_TASK_TYPES.items():
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
 			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
