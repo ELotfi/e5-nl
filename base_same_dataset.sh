@@ -17,13 +17,13 @@ export WANDB_MODE=disabled
 	#    --negatives_cross_device \
 
 
-num_train_epochs=1
-per_device_train_batch_size=512
+num_train_epochs=4
+per_device_train_batch_size=64
 num_gpus=1
-model_name_or_path="intfloat/multilingual-e5-large-instruct"  # Qwen/Qwen3-Embedding-4B
+model_name_or_path="FremyCompany/roberta-base-nl-oscar23"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
-#python build_data.py  --use_syn_data True --model $model_name_or_path --is_llm True --filter_by_dpn True --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+#python build_data.py  --use_old_data True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -39,7 +39,7 @@ model_args="\
 	--trust_remote_code True \
 	--load_bf16 True \
 	--use_flash_attention False \
-	--add_lora True \
+	--add_lora False \
 	--lora_rank 16 \
 	--lora_alpha 32 \
 	--lora_dropout 0.05 \
@@ -48,38 +48,40 @@ model_args="\
 data_args="\
     --train_data $train_data \
     --cache_path ~/.cache \
-    --train_group_size 2 \
-    --query_max_len 512 \
-    --passage_max_len 512 \
+    --train_group_size 8 \
+    --query_max_len 96 \
+    --passage_max_len 450 \
     --pad_to_multiple_of 8 \
     --same_dataset_within_batch True \
     --small_threshold 0 \
     --drop_threshold 0 \
-	--knowledge_distillation True \
+	--query_instruction_for_retrieval 'query: ' \
+	--passage_instruction_for_retrieval 'passage: ' \
+    --query_instruction_format '{}{}' \
+	--passage_instruction_format '{}{}' \
 "
 
 training_args="\
-    --learning_rate 1e-4 \
+    --learning_rate 2e-5 \
     --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
-	--gradient_accumulation_steps 1 \
-	--gradient_checkpointing True \
+	--gradient_accumulation_steps 2 \
+	--gradient_checkpointing False \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
-    --warmup_ratio 0.2 \
+    --warmup_steps 500 \
 	--weight_decay 0.1 \
-    --logging_steps 1 \
+    --logging_steps 10 \
     --save_total_limit 4 \
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5_large_inst_lora16_kd_syn_flt_01_08_no_ls \
+	--hub_model_id  Ehsanl/Robbert_base23_old_7neg \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
     --normalize_embeddings True \
-	--deepspeed ds_stage1.json \
 "
 
 cmd="torchrun --nproc_per_node $num_gpus \

@@ -6,7 +6,7 @@ from functools import partial
 
 SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
 SYN_TASK_TYPES = {'sl':'', 'ls':'-no_in_batch_neg', 'sts':'', 'll':'', 'ss':''}
-OLD_DATASETS = {
+OLD_DATASETS_ = {
 	"HotpotQA-NL": {'id': "Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'hpqa'},
 	"FEVER-NL": {'id':"Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'fevr' },
 	"MSMARCO-NL": {'id':"Ehsanl/msm_nl_trip", 'ratio':.6, 'suf':''},
@@ -14,6 +14,13 @@ OLD_DATASETS = {
 	"SQuAD-NL": {'id':"Ehsanl/sq_nl_trip", 'ratio':1, 'suf':'-no_in_batch_neg'},
 	"Quora-NL": {'id':"Ehsanl/qr_nl_trip", 'ratio':.3, 'suf':''}
 }
+
+OLD_DATASETS = {
+	"HotpotQA-NL": {'id': "Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'hpqa'},
+	"FEVER-NL": {'id':"Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'fevr' },
+	"MSMARCO-NL": {'id':"Ehsanl/RetNLMined", 'ratio':.6, 'suf':'', 'config':'mrco'}
+}
+
 
 CNV_DATASETS = {
 	"QA3-NL": {'id': "Ehsanl/qa3_nl_trip", 'ratio':1, 'suf':''},
@@ -69,7 +76,9 @@ def main(args):
 		for data_name, flds in OLD_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
 			data_dir = flds.get('config', 'data')
-			dataset = load_dataset(data_id, data_dir=data_dir, split='train').shuffle()
+			dataset = load_dataset(data_id, data_dir=data_dir, split='train', token=args.token).shuffle()
+			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg']]
+			dataset = dataset.remove_columns(removed_columns)
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
 			if is_llm: 
 				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
