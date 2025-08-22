@@ -417,7 +417,7 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
         batch_indices = batch_indices[self.process_index * cur_batch_size: (self.process_index + 1) * cur_batch_size]
         batch_data = self.dataset[batch_indices]
         self.step += 1
-        queries, passages, teacher_scores = self._create_batch_data(batch_raw_data=batch_data, train_group_size=train_group_size)
+        queries, passages, teacher_scores = self._create_batch_data(batch_raw_data=batch_data, given_train_group_size=train_group_size)
         return queries, passages, teacher_scores, no_in_batch_neg_flag
 
     def _get_train_group_size(self, batch_raw_data, given_train_group_size):

@@ -117,6 +117,6 @@ if __name__ == '__main__':
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
 	parser.add_argument('--filter_by_dpn', default=False)
-	parser.add_argument('--dpn_thresh', default=0.9)
+	parser.add_argument('--dpn_thresh', default=0.98)
 	args = parser.parse_args()
 	main(args)
