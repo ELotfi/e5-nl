@@ -67,7 +67,9 @@ def main(args):
 	if args.use_syn_data:
 		group_size = 2
 		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
-		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x:(x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh))
+		print(len(raw_dataset))
+		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x:((x['task_type']=='ls') or (x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)))
+		print(len(raw_dataset))
 		for task, task_conf in SYN_TASKS.items():
 			task_suffix, task_type = task_conf['suf'], task_conf['type']
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
@@ -84,17 +86,18 @@ def main(args):
 
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
-			data_id, ratio, suffix, group_size = flds['id'], flds['ratio'], flds['suf'], flds['group_size']	
+			data_id, ratio, suffix, group_size, task_type = flds['id'], flds['ratio'], flds['suf'], flds['group_size'], flds['type']	
 			data_dir = flds.get('config', 'data')
 			dataset = load_dataset(data_id, data_dir=data_dir, split='train', token=args.token).shuffle()
-			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg']]
+			dataset = dataset.add_column('type',[task_type]*len(dataset))
+			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg', 'type']]
 			dataset = dataset.remove_columns(removed_columns)
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
 			if is_llm: 
 				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
 				dataset = dataset.map(tasked_prompt)
 			dataset.to_json(f'data/{group_size}_old_{data_name}{suffix}.jsonl')
-			
+
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']
@@ -114,6 +117,6 @@ if __name__ == '__main__':
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
 	parser.add_argument('--filter_by_dpn', default=False)
-	parser.add_argument('--dpn_thresh', default=0.8)
+	parser.add_argument('--dpn_thresh', default=0.9)
 	args = parser.parse_args()
 	main(args)

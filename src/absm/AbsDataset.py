@@ -305,12 +305,11 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
 
                 # Add `no_in_batch_neg` **suffix** to `data_dir` to indicate that this dataset does not use in-batch negatives
                 no_in_batch_neg_flag = data_dir.endswith('no_in_batch_neg')
-                group_size_mark = data_dir.split('_')[0]
-                group_size = int(group_size_mark) if group_size_mark.isnumeric() else self.args.train_group_size
                 for file in os.listdir(data_dir):
                     if not (file.endswith('.json') or file.endswith('.jsonl')): continue
                     temp_dataset = self._load_dataset(os.path.join(data_dir, file))
-
+                    group_size_mark = file.split('_')[0]
+                    group_size = int(group_size_mark) if group_size_mark.isnumeric() else self.args.train_group_size
                     if len(temp_dataset) == 0: continue
                     elif len(temp_dataset) < small_threshold:
                         small_datasets.append(temp_dataset)
