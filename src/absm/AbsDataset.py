@@ -438,7 +438,8 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
             elif data_type in ['symmetric_class']:
                 return min(len(batch_raw_data['neg'][0]) + 1, self.args.train_group_size), data_type
             else:
-                return self.args.train_group_size, data_type
+                #return self.args.train_group_size, data_type
+                return given_train_group_size, data_type
         elif 'train_group_size' in batch_raw_data:
             train_group_size = batch_raw_data['train_group_size'][0]
             if isinstance(train_group_size, int) and train_group_size > 0:
