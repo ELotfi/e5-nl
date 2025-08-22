@@ -275,6 +275,7 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
         each_data_idxs = []
         batch_size_idxs = []
         no_in_batch_neg_flags = []
+        dataset_train_group_size = []
         cur_all_num = 0
 
         small_threshold = args.small_threshold
@@ -284,6 +285,8 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
             if not os.path.isdir(data_dir):
                 # Add `no_in_batch_neg` **suffix** to `data_dir` to indicate that this dataset does not use in-batch negatives
                 no_in_batch_neg_flag = data_dir.split('.')[-2].endswith('no_in_batch_neg')
+                group_size_mark = data_dir.split('_')[0]
+                group_size = int(group_size_mark) if group_size_mark.isnumeric() else self.args.train_group_size
                 if not (data_dir.endswith('.json') or data_dir.endswith('.jsonl')): continue
                 temp_dataset = self._load_dataset(data_dir)
 
@@ -294,6 +297,7 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
                     cur_all_num += len(temp_dataset)
                     batch_size_idxs.append(self._get_file_batch_size(temp_dataset, default_batch_size))
                     no_in_batch_neg_flags.append(no_in_batch_neg_flag)
+                    dataset_train_group_size.append(group_size)
 
             else:
                 small_datasets = []
@@ -301,6 +305,8 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
 
                 # Add `no_in_batch_neg` **suffix** to `data_dir` to indicate that this dataset does not use in-batch negatives
                 no_in_batch_neg_flag = data_dir.endswith('no_in_batch_neg')
+                group_size_mark = data_dir.split('_')[0]
+                group_size = int(group_size_mark) if group_size_mark.isnumeric() else self.args.train_group_size
                 for file in os.listdir(data_dir):
                     if not (file.endswith('.json') or file.endswith('.jsonl')): continue
                     temp_dataset = self._load_dataset(os.path.join(data_dir, file))
@@ -315,6 +321,7 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
                         cur_all_num += len(temp_dataset)
                         batch_size_idxs.append(self._get_file_batch_size(temp_dataset, default_batch_size))
                         no_in_batch_neg_flags.append(no_in_batch_neg_flag)
+                        dataset_train_group_size.append(group_size)
 
                 if len(small_datasets) > 0:
                     small_dataset = datasets.concatenate_datasets(small_datasets)
@@ -324,12 +331,14 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
                         cur_all_num += len(small_dataset)
                         batch_size_idxs.append(small_batch_size)
                         no_in_batch_neg_flags.append(no_in_batch_neg_flag)
+                        dataset_train_group_size.append(group_size)
 
         self.dataset = datasets.concatenate_datasets(train_datasets)
         self.each_data_idxs = each_data_idxs
         self.datasets_inxs = np.arange(len(each_data_idxs))
         self.batch_size_idxs = batch_size_idxs
         self.no_in_batch_neg_flags = no_in_batch_neg_flags
+        self.train_group_sizes = dataset_train_group_size
 
         self.refresh_epoch()
 
@@ -386,13 +395,15 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
             self.deterministic_generator.shuffle(self.each_data_idxs[dataset_inx])
             cur_batch_size = self.batch_size_idxs[dataset_inx]*self.num_processes
             no_in_batch_neg_flag = self.no_in_batch_neg_flags[dataset_inx]
+            train_group_size = self.train_group_sizes[dataset_inx]
             for start_index in range(0, len(self.each_data_idxs[dataset_inx]), cur_batch_size):
                 # judge the last batch's length
                 if len(self.each_data_idxs[dataset_inx]) - start_index < cur_batch_size:
                     break
                 batch_datas.append((
                     self.each_data_idxs[dataset_inx][start_index:start_index+cur_batch_size],
-                    no_in_batch_neg_flag
+                    no_in_batch_neg_flag,
+                    train_group_size
                 ))
         self.deterministic_generator.shuffle(batch_datas)
         self.batch_datas = batch_datas
@@ -402,15 +413,15 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
         return len(self.batch_datas) * self.num_processes
 
     def __getitem__(self, _):
-        batch_indices, no_in_batch_neg_flag = self.batch_datas[self.step]    # extend here
+        batch_indices, no_in_batch_neg_flag, train_group_size = self.batch_datas[self.step]    # extend here
         cur_batch_size = int(len(batch_indices) / self.num_processes)
         batch_indices = batch_indices[self.process_index * cur_batch_size: (self.process_index + 1) * cur_batch_size]
         batch_data = self.dataset[batch_indices]
         self.step += 1
-        queries, passages, teacher_scores = self._create_batch_data(batch_raw_data=batch_data)
+        queries, passages, teacher_scores = self._create_batch_data(batch_raw_data=batch_data, train_group_size=train_group_size)
         return queries, passages, teacher_scores, no_in_batch_neg_flag
 
-    def _get_train_group_size(self, batch_raw_data):
+    def _get_train_group_size(self, batch_raw_data, given_train_group_size):
         """Get the training group size and data type.
 
         Args:
@@ -434,9 +445,10 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
                 return train_group_size, None
             else:
                 return self.args.train_group_size, None
-        return self.args.train_group_size, None
+        #return self.args.train_group_size, None
+        return given_train_group_size, None
 
-    def _create_batch_data(self, batch_raw_data):
+    def _create_batch_data(self, batch_raw_data, given_train_group_size):
         """Create a comple batch of data with queries, documents and teacher scores.
 
         Args:
@@ -449,7 +461,7 @@ class AbsEmbedderSameDatasetTrainDataset(AbsEmbedderTrainDataset):
         """
         queries, passages, teacher_scores = [], [], []
 
-        train_group_size, data_type = self._get_train_group_size(batch_raw_data)
+        train_group_size, data_type = self._get_train_group_size(batch_raw_data, given_train_group_size)
 
         for i in range(len(batch_raw_data['query'])):
             if data_type is not None:

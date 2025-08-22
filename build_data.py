@@ -16,9 +16,9 @@ OLD_DATASETS_ = {
 }
 
 OLD_DATASETS = {
-	"HotpotQA-NL": {'id': "Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'hpqa'},
-	"FEVER-NL": {'id':"Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'fevr' },
-	"MSMARCO-NL": {'id':"Ehsanl/RetNLMined", 'ratio':.6, 'suf':'', 'config':'mrco'}
+	"HotpotQA-NL": {'id': "Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'hpqa', 'group_size':8},
+	"FEVER-NL": {'id':"Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'fevr' , 'group_size':8},
+	"MSMARCO-NL": {'id':"Ehsanl/RetNLMined", 'ratio':.6, 'suf':'', 'config':'mrco', 'group_size':8}
 }
 
 
@@ -66,15 +66,16 @@ def main(args):
 	
 	print('Building the datasets ...')
 	if args.use_syn_data:
+		group_size = 2
 		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
 		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x:(x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh))
 		for task, task_suffix in SYN_TASK_TYPES.items():
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
 			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
-			if len(task_dataset)>0: task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
+			if len(task_dataset)>0: task_dataset.to_json(f'data/{group_size}_syn_{task}{task_suffix}.jsonl')
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
-			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
+			data_id, ratio, suffix, group_size = flds['id'], flds['ratio'], flds['suf'], flds['group_size']	
 			data_dir = flds.get('config', 'data')
 			dataset = load_dataset(data_id, data_dir=data_dir, split='train', token=args.token).shuffle()
 			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg']]
@@ -83,7 +84,7 @@ def main(args):
 			if is_llm: 
 				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
 				dataset = dataset.map(tasked_prompt)
-			dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
+			dataset.to_json(f'data/{group_size}_old_{data_name}{suffix}.jsonl')
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']
