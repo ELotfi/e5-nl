@@ -177,3 +177,29 @@ me5-large-instruct :
 	lr:  1e-4
 	time: 20m
 	hf: Ehsanl/me5_large_inst_lora16_kd_syn_flt_01_08_no_ls
+
+
+roberta-base-nl-oscar23 :
+	1 * H200 (140GB)
+	ip: -
+	pdbs: 64 (GA2)
+	data: old(7n)+syn(2n)
+	ds: -
+	bf16/WD/
+	lora: -
+	lr:  2e-5 WU(3k/28k, 3ep)
+	time: 5hr
+	hf: Ehsanl/Robbert_base23_oldsyn_7-2neg
+
+
+GroNLP/bert-base-dutch-cased :
+	1 * H200 (140GB)
+	ip: -
+	pdbs: 80 (GA2)
+	data: old(7n)+syn(2n)-filtered (p>.1, dpn<.98)
+	ds: -
+	bf16/WD/
+	lora: -
+	lr:  5e-5 WU(3k/19k, 3ep)
+	time: 5hr
+	hf: Ehsanl/bert_dutch_base_oldsyn_filt_7_2neg
