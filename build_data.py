@@ -21,9 +21,9 @@ OLD_DATASETS_ = {
 }
 
 OLD_DATASETS = {
-	"HotpotQA-NL": {'id': "Ehsanl/RetNLMined", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval'},
-	"FEVER-NL": {'id':"Ehsanl/RetNLMined", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval'},
-	"MSMARCO-NL": {'id':"Ehsanl/RetNLMined",'config':'mrco', 'ratio':.6, 'suf':'', 'group_size':8, 'type':'retrieval'}
+	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval'},
+	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval'},
+	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval'}
 }
 
 

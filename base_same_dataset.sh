@@ -17,13 +17,13 @@ export WANDB_MODE=disabled
 	#    --negatives_cross_device \
 
 
-num_train_epochs=4
+num_train_epochs=3
 per_device_train_batch_size=64
 num_gpus=1
 model_name_or_path="FremyCompany/roberta-base-nl-oscar23"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
-#python build_data.py  --use_old_data True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+python build_data.py  --use_old_data True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -59,6 +59,7 @@ data_args="\
 	--passage_instruction_for_retrieval 'passage: ' \
     --query_instruction_format '{}{}' \
 	--passage_instruction_format '{}{}' \
+	--knowledge_distillation True \
 "
 
 training_args="\
@@ -70,14 +71,14 @@ training_args="\
 	--gradient_checkpointing False \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
-    --warmup_steps 500 \
+    --warmup_steps 2000 \
 	--weight_decay 0.1 \
     --logging_steps 10 \
     --save_total_limit 4 \
     --save_strategy steps \
-    --save_steps 0.25 \
+    --save_steps 0.166 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/Robbert_base23_old_7neg \
+	--hub_model_id  Ehsanl/Robbert_base23_old_7neg_kd \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
