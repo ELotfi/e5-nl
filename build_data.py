@@ -90,7 +90,7 @@ def main(args):
 			data_dir = flds.get('config', 'data')
 			dataset = load_dataset(data_id, data_dir=data_dir, split='train', token=args.token).shuffle()
 			dataset = dataset.add_column('type',[task_type]*len(dataset))
-			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg', 'type']]
+			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg', 'type', 'pos_scores', 'neg_scores']]
 			dataset = dataset.remove_columns(removed_columns)
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
 			if is_llm: 
