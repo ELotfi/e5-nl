@@ -1,6 +1,6 @@
 from transformers import HfArgumentParser
 from huggingface_hub import HfApi
-
+import io
 from src.absm import (
     AbsEmbedderModelArguments as EncoderOnlyEmbedderModelArguments,
     AbsEmbedderDataArguments as EncoderOnlyEmbedderDataArguments,
@@ -25,8 +25,9 @@ def main():
     training_args: EncoderOnlyEmbedderTrainingArguments
 
     api = HfApi()
+    args = '\n'.join(l for l in open("base_same_dataset.sh").readlines() if not l.strip().startswith('hf_hub_token'))
     api.upload_file(
-        path_or_fileobj="base_same_dataset.sh",
+        path_or_fileobj=io.BytesIO(args.encode('utf-8')),
         path_in_repo="args.txt",
         repo_id = training_args.hub_model_id,
         repo_type="model",
