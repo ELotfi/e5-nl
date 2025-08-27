@@ -20,7 +20,7 @@ export WANDB_MODE=disabled
 num_train_epochs=3
 per_device_train_batch_size=64
 num_gpus=1
-model_name_or_path="FremyCompany/roberta-base-nl-oscar23"  # Qwen/Qwen3-Embedding-4B
+model_name_or_path="nicolaebanari/e5-base-v2-bertje"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
 python build_data.py  --use_old_data True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
@@ -48,7 +48,7 @@ model_args="\
 data_args="\
     --train_data $train_data \
     --cache_path ~/.cache \
-    --train_group_size 8 \
+    --train_group_size 0 \
     --query_max_len 96 \
     --passage_max_len 450 \
     --pad_to_multiple_of 8 \
@@ -59,7 +59,7 @@ data_args="\
 	--passage_instruction_for_retrieval 'passage: ' \
     --query_instruction_format '{}{}' \
 	--passage_instruction_format '{}{}' \
-	--knowledge_distillation True \
+	--knowledge_distillation False \
 "
 
 training_args="\
@@ -68,7 +68,7 @@ training_args="\
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
 	--gradient_accumulation_steps 2 \
-	--gradient_checkpointing False \
+	--gradient_checkpointing True \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
     --warmup_steps 2000 \

@@ -57,7 +57,7 @@ def add_prompts(query, task_desc:str, data_type, dataset_name=None):
 
 def main(args):
 	is_llm = any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) if args.is_llm is None else args.is_llm
-	print(is_llm)
+	print(is_llm, args.filter_by_dpn)
 
 	def _add_prompt(sample, dataset_name):
 		sample['query'] = add_prompts(sample['query'], None, data_type='old', dataset_name=dataset_name)
@@ -68,11 +68,14 @@ def main(args):
 		group_size = 2
 		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
 		print(len(raw_dataset))
-		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x:((x['task_type']=='ls') or (x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)))
+		if args.filter_by_dpn:
+			print('Filtering by dpn ...') 
+			raw_dataset = raw_dataset.filter(lambda x:((x['task_type']=='ls') or (x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)))
 		print(len(raw_dataset))
 		for task, task_conf in SYN_TASKS.items():
 			task_suffix, task_type = task_conf['suf'], task_conf['type']
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
+			print(len(task_dataset))
 
 			def _transform_syn(sample):
 				if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
@@ -117,6 +120,6 @@ if __name__ == '__main__':
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
 	parser.add_argument('--filter_by_dpn', default=False)
-	parser.add_argument('--dpn_thresh', default=0.98)
+	parser.add_argument('--dpn_thresh', default=0.96)
 	args = parser.parse_args()
 	main(args)
