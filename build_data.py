@@ -5,7 +5,12 @@ from functools import partial
 
 
 SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
-SYN_TASK_TYPES = {'sl':'', 'ls':'-no_in_batch_neg', 'sts':'', 'll':'', 'ss':''}
+SYN_TASKS = {'sl':{'suf':'', 'type':'retrieval'}, 
+			 'ls': {'suf':'-no_in_batch_neg', 'type':'classification'}, 
+			 'sts':{'suf':'', 'type':'symmetric_sts'}, 
+			 'll':{'suf':'', 'type':'symmetric_clustering'}, 
+			 'ss':{'suf':'', 'type':'symmetric_clustering'}
+			}
 OLD_DATASETS_ = {
 	"HotpotQA-NL": {'id': "Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'hpqa'},
 	"FEVER-NL": {'id':"Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'fevr' },
@@ -16,9 +21,9 @@ OLD_DATASETS_ = {
 }
 
 OLD_DATASETS = {
-	"HotpotQA-NL": {'id': "Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'hpqa'},
-	"FEVER-NL": {'id':"Ehsanl/RetNLMined", 'ratio':1, 'suf':'', 'config':'fevr' },
-	"MSMARCO-NL": {'id':"Ehsanl/RetNLMined", 'ratio':.6, 'suf':'', 'config':'mrco'}
+	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval'},
+	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval'},
+	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval'}
 }
 
 
@@ -52,13 +57,7 @@ def add_prompts(query, task_desc:str, data_type, dataset_name=None):
 
 def main(args):
 	is_llm = any([k in args.model for k in ['Qwen', 'Mistral', 'EuroLLM']]) if args.is_llm is None else args.is_llm
-	print(is_llm)
-
-	def _transform_syn(sample):
-		if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
-		sample['pos'] = [sample['pos']]
-		sample['neg'] = [sample['neg']]
-		return sample
+	print(is_llm, args.filter_by_dpn)
 
 	def _add_prompt(sample, dataset_name):
 		sample['query'] = add_prompts(sample['query'], None, data_type='old', dataset_name=dataset_name)
@@ -66,24 +65,42 @@ def main(args):
 	
 	print('Building the datasets ...')
 	if args.use_syn_data:
+		group_size = 2
 		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
-		if args.filter_by_dpn: raw_dataset = raw_dataset.filter(lambda x:(x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh))
-		for task, task_suffix in SYN_TASK_TYPES.items():
+		print(len(raw_dataset))
+		if args.filter_by_dpn:
+			print('Filtering by dpn ...') 
+			raw_dataset = raw_dataset.filter(lambda x:((x['task_type']=='ls') or (x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)))
+		print(len(raw_dataset))
+		for task, task_conf in SYN_TASKS.items():
+			task_suffix, task_type = task_conf['suf'], task_conf['type']
 			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
+			print(len(task_dataset))
+
+			def _transform_syn(sample):
+				if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
+				sample['pos'] = [sample['pos']]
+				sample['neg'] = [sample['neg']]
+				sample['type'] = task_type
+				return sample
+			
 			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
-			if len(task_dataset)>0: task_dataset.to_json(f'data/syn_{task}{task_suffix}.jsonl')
+			if len(task_dataset)>0: task_dataset.to_json(f'data/{group_size}_syn_{task}{task_suffix}.jsonl')
+
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
-			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']	
+			data_id, ratio, suffix, group_size, task_type = flds['id'], flds['ratio'], flds['suf'], flds['group_size'], flds['type']	
 			data_dir = flds.get('config', 'data')
 			dataset = load_dataset(data_id, data_dir=data_dir, split='train', token=args.token).shuffle()
-			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg']]
+			dataset = dataset.add_column('type',[task_type]*len(dataset))
+			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg', 'type', 'pos_scores', 'neg_scores']]
 			dataset = dataset.remove_columns(removed_columns)
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
 			if is_llm: 
 				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
 				dataset = dataset.map(tasked_prompt)
-			dataset.to_json(f'data/old_{data_name}{suffix}.jsonl')
+			dataset.to_json(f'data/{group_size}_old_{data_name}{suffix}.jsonl')
+
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
 			data_id, ratio, suffix = flds['id'], flds['ratio'], flds['suf']
@@ -103,6 +120,6 @@ if __name__ == '__main__':
 	parser.add_argument('--token', default=None)
 	parser.add_argument('--is_llm', default=None)
 	parser.add_argument('--filter_by_dpn', default=False)
-	parser.add_argument('--dpn_thresh', default=0.8)
+	parser.add_argument('--dpn_thresh', default=0.96)
 	args = parser.parse_args()
 	main(args)
