@@ -59,7 +59,7 @@ def main(args):
 	if args.use_syn_data:
 		for data_name, flds in SYN_DATASETS.items():
 			data_id, ratio, suffix, order, group_size, task_type = flds['id'], flds['ratio'], flds['suf'], flds['order'], flds['group_size'], flds['type']	
-			dataset = load_dataset(data_id, data_dir=data_id, split='train', token=args.token).shuffle()
+			dataset = load_dataset(data_id, data_dir=data_name, split='train', token=args.token).shuffle()
 			if args.filter_by_dpn:
 				print('Filtering by dpn ...') 
 				dataset = dataset.filter(lambda x:((x['task_type']=='ls') or (x['rr_pos_score'][0] >= .1) and (x['rr_pos_score'][0] - x['rr_neg_score'][0] <= args.dpn_thresh)))
@@ -74,7 +74,7 @@ def main(args):
 			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg', 'type', 'pos_scores', 'neg_scores']]
 			dataset = dataset.remove_columns(removed_columns)
 			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
-			if len(task_dataset)>0: dataset.to_json(f'data/{group_size}_{order}_syn_{data_name}{suffix}.jsonl')
+			if len(dataset)>0: dataset.to_json(f'data/{group_size}_{order}_syn_{data_name}{suffix}.jsonl')
 
 
 	if args.use_old_data:
