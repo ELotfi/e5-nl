@@ -4,28 +4,19 @@ from argparse import ArgumentParser
 from functools import partial
 
 
-SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
-SYN_TASKS = {'sl':{'suf':'', 'type':'retrieval'}, 
-			 'ls': {'suf':'-no_in_batch_neg', 'type':'classification'}, 
-			 'sts':{'suf':'', 'type':'symmetric_sts'}, 
-			 'll':{'suf':'', 'type':'symmetric_clustering'}, 
-			 'ss':{'suf':'', 'type':'symmetric_clustering'}
+#SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
+SYN_DATASETS = {'sl':{'id':'Ehsanl/SynEmbMinedkd', 'config':'sl', 'group_size':8, 'suf':'', 'type':'retrieval', 'ratio':1, 'order':7}, 
+			 'ls': {'id':'Ehsanl/SynEmbMinedkd', 'config':'ls', 'group_size':2, 'suf':'-no_in_batch_neg', 'type':'classification', 'ratio':1, 'order':0}, 
+			 'sts':{'id':'Ehsanl/SynEmbMinedkd', 'config':'sts', 'group_size':8, 'suf':'', 'type':'symmetric_sts', 'ratio':1, 'order':2}, 
+			 'll':{'id':'Ehsanl/SynEmbMinedkd', 'config':'ll', 'group_size':8,'suf':'', 'type':'symmetric_clustering', 'ratio':1, 'order':4}, 
+			 'ss':{'id':'Ehsanl/SynEmbMinedkd', 'config':'ss', 'group_size':8,'suf':'', 'type':'symmetric_clustering', 'ratio':1, 'order':6}
 			}
-OLD_DATASETS_ = {
-	"HotpotQA-NL": {'id': "Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'hpqa'},
-	"FEVER-NL": {'id':"Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'fevr' },
-	"MSMARCO-NL": {'id':"Ehsanl/msm_nl_trip", 'ratio':.6, 'suf':''},
-	#"NQ-NL": ("clips/beir-nl-nq",1),
-	"SQuAD-NL": {'id':"Ehsanl/sq_nl_trip", 'ratio':1, 'suf':'-no_in_batch_neg'},
-	"Quora-NL": {'id':"Ehsanl/qr_nl_trip", 'ratio':.3, 'suf':''}
-}
 
 OLD_DATASETS = {
-	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval'},
-	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval'},
-	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval'}
+	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval', 'order':1},
+	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval', 'order':3},
+	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval', 'order':5}
 }
-
 
 CNV_DATASETS = {
 	"QA3-NL": {'id': "Ehsanl/qa3_nl_trip", 'ratio':1, 'suf':''},
@@ -64,32 +55,31 @@ def main(args):
 		return sample
 	
 	print('Building the datasets ...')
-	if args.use_syn_data:
-		group_size = 2
-		raw_dataset = load_dataset('Ehsanl/SynRetRr', data_dir='rranked', token=args.token)['train'].rename_column('q', 'query')
-		print(len(raw_dataset))
-		if args.filter_by_dpn:
-			print('Filtering by dpn ...') 
-			raw_dataset = raw_dataset.filter(lambda x:((x['task_type']=='ls') or (x['pos_scores'][0] >= .1) and (x['pos_scores'][0] - x['neg_scores'][0] <= args.dpn_thresh)))
-		print(len(raw_dataset))
-		for task, task_conf in SYN_TASKS.items():
-			task_suffix, task_type = task_conf['suf'], task_conf['type']
-			task_dataset = raw_dataset.filter(lambda x: x['task_type']== task)
-			print(len(task_dataset))
 
+	if args.use_syn_data:
+		for data_name, flds in SYN_DATASETS.items():
+			data_id, ratio, suffix, order, group_size, task_type = flds['id'], flds['ratio'], flds['suf'], flds['order'], flds['group_size'], flds['type']	
+			dataset = load_dataset(data_id, data_dir=data_id, split='train', token=args.token).shuffle()
+			if args.filter_by_dpn:
+				print('Filtering by dpn ...') 
+				dataset = dataset.filter(lambda x:((x['task_type']=='ls') or (x['rr_pos_score'][0] >= .1) and (x['rr_pos_score'][0] - x['rr_neg_score'][0] <= args.dpn_thresh)))
+			
 			def _transform_syn(sample):
 				if is_llm: sample['query'] = add_prompts(sample['query'], sample['task_desc'], 'syn')
 				sample['pos'] = [sample['pos']]
-				sample['neg'] = [sample['neg']]
 				sample['type'] = task_type
 				return sample
 			
-			task_dataset = task_dataset.map(_transform_syn).remove_columns(['task_type', 'task_desc'])
-			if len(task_dataset)>0: task_dataset.to_json(f'data/{group_size}_syn_{task}{task_suffix}.jsonl')
+			dataset = dataset.map(_transform_syn)
+			removed_columns = [c for c in dataset.column_names if c not in ['query', 'pos', 'neg', 'type', 'pos_scores', 'neg_scores']]
+			dataset = dataset.remove_columns(removed_columns)
+			if ratio < 1: dataset = dataset.select(range(int(len(dataset)*ratio)))
+			if len(task_dataset)>0: dataset.to_json(f'data/{group_size}_{order}_syn_{data_name}{suffix}.jsonl')
+
 
 	if args.use_old_data:
 		for data_name, flds in OLD_DATASETS.items():
-			data_id, ratio, suffix, group_size, task_type = flds['id'], flds['ratio'], flds['suf'], flds['group_size'], flds['type']	
+			data_id, ratio, suffix, order, group_size, task_type = flds['id'], flds['ratio'], flds['suf'], flds['order'], flds['group_size'], flds['type']	
 			data_dir = flds.get('config', 'data')
 			dataset = load_dataset(data_id, data_dir=data_dir, split='train', token=args.token).shuffle()
 			dataset = dataset.add_column('type',[task_type]*len(dataset))
@@ -99,7 +89,7 @@ def main(args):
 			if is_llm: 
 				tasked_prompt = partial(_add_prompt, dataset_name=data_name)
 				dataset = dataset.map(tasked_prompt)
-			dataset.to_json(f'data/{group_size}_old_{data_name}{suffix}.jsonl')
+			dataset.to_json(f'data/{group_size}_{order}_old_{data_name}{suffix}.jsonl')
 
 	if args.use_cnv_data:
 		for data_name, flds in CNV_DATASETS.items():
