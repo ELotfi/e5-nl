@@ -9,13 +9,13 @@ SYN_DATASETS = {'sl':{'id':'Ehsanl/SynEmbMinedkd', 'config':'sl', 'group_size':8
 			 'ls': {'id':'Ehsanl/SynEmbMinedkd', 'config':'ls', 'group_size':2, 'suf':'-no_in_batch_neg', 'type':'classification', 'ratio':1, 'order':0}, 
 			 'sts':{'id':'Ehsanl/SynEmbMinedkd', 'config':'sts', 'group_size':8, 'suf':'', 'type':'symmetric_sts', 'ratio':1, 'order':2}, 
 			 'll':{'id':'Ehsanl/SynEmbMinedkd', 'config':'ll', 'group_size':8,'suf':'', 'type':'symmetric_clustering', 'ratio':1, 'order':4}, 
-			 'ss':{'id':'Ehsanl/SynEmbMinedkd', 'config':'ss', 'group_size':8,'suf':'', 'type':'symmetric_clustering', 'ratio':1, 'order':6}
+			 'ss':{'id':'Ehsanl/SynEmbMinedkd', 'config':'ss', 'group_size':8,'suf':'', 'type':'symmetric_clustering', 'ratio':1, 'order':5}
 			}
 
 OLD_DATASETS = {
 	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval', 'order':1},
-	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval', 'order':3},
-	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval', 'order':5}
+	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval', 'order':6},
+	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval', 'order':3}
 }
 
 CNV_DATASETS = {
