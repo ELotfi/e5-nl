@@ -17,13 +17,19 @@ export WANDB_MODE=disabled
 	#    --negatives_cross_device \
 
 
-num_train_epochs=3
-per_device_train_batch_size=64
+# OLD_DATASETS = {
+# 	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval'},
+# 	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':.75, 'suf':'' , 'group_size':8, 'type':'retrieval'},
+# 	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.5, 'suf':'', 'group_size':8, 'type':'retrieval'}
+
+
+num_train_epochs=1
+per_device_train_batch_size=256
 num_gpus=1
-model_name_or_path="nicolaebanari/e5-base-v2-bertje"  # Qwen/Qwen3-Embedding-4B
+model_name_or_path="nicolaebanari/me5-base-trimmed-nl-test"  # Qwen/Qwen3-Embedding-4B
 hf_hub_token=''
 
-python build_data.py  --use_old_data True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+#python build_data.py  --use_old_data True --use_syn_data True  --filter_by_dpn True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -49,8 +55,8 @@ data_args="\
     --train_data $train_data \
     --cache_path ~/.cache \
     --train_group_size 0 \
-    --query_max_len 96 \
-    --passage_max_len 450 \
+    --query_max_len 450 \
+    --passage_max_len 500 \
     --pad_to_multiple_of 8 \
     --same_dataset_within_batch True \
     --small_threshold 0 \
@@ -67,22 +73,23 @@ training_args="\
     --bf16 \
     --num_train_epochs $num_train_epochs \
     --per_device_train_batch_size $per_device_train_batch_size \
-	--gradient_accumulation_steps 2 \
+	--gradient_accumulation_steps 8 \
 	--gradient_checkpointing True \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
-    --warmup_steps 2000 \
+    --warmup_ratio 0.20 \
 	--weight_decay 0.1 \
     --logging_steps 10 \
     --save_total_limit 4 \
     --save_strategy steps \
-    --save_steps 0.166 \
+    --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/Robbert_base23_old_7neg_kd \
+	--hub_model_id  Ehsanl/me5-base-trimmed-old-syn-filt-7_2ng_fin \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
     --normalize_embeddings True \
+	--deepspeed ds_stage3.json \
 "
 
 cmd="torchrun --nproc_per_node $num_gpus \
