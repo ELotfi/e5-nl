@@ -1,6 +1,7 @@
 data/
 output/
 trainer_output/
+converted_chekpnts/
 *.pyc
 *.out
 chackpoints/
