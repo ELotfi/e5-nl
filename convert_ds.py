@@ -587,11 +587,11 @@ def load_state_dict_from_zero_checkpoint(model, checkpoint_dir, tag=None):
 def main(args): 
 # Load the checkpoint
 	api = HfApi()
-	checkpoints = [fl for fl in os.listdir('trainer_output/') if os.path.isdir(f'trainer_output/{fl}')]
-	print(checkpoints)
-	converted_ckpts = [ckpt for ckpt in checkpoints if ckpt.startswith('ckpt-')]
+	raw_checkpoints = [fl for fl in os.listdir('trainer_output/') if os.path.isdir(f'trainer_output/{fl}')]
+	#print(checkpoints)
+	converted_ckpts = [fl for fl in os.listdir('converted_chekpnts/') if os.path.isdir(f'converted_chekpnts/{fl}')]
 	converted_steps = [c.split('-')[-1] for c in converted_ckpts]
-	raw_ckpts = [ckpt for ckpt in checkpoints if ckpt.split('-')[-1] not in converted_steps]
+	raw_ckpts = [ckpt for ckpt in raw_checkpoints if ckpt.split('-')[-1] not in converted_steps]
 	
 	if raw_ckpts != []: os.makedirs('converted_chekpnts', exist_ok=True)
 
@@ -633,8 +633,8 @@ if __name__ == "__main__":
 	parser.add_argument("--base_repo",
 						type=str,
 						help="path to the desired checkpoint folder, e.g., path/checkpoint-12",
-						default='nicolaebanari/me5-large-trimmed-nl-test')
-	parser.add_argument("--dest_repo", default='Ehsanl/me5-large-trimmed-old-syn-filt_2ng_llr_5e6')
+						default='nicolaebanari/e5-large-v2-bertje')
+	parser.add_argument("--dest_repo", default='Ehsanl/e5-large-v2-bertje-old-syn-filt_2ng_lr_1e5')
 	parser.add_argument("--token", default='')
 	args = parser.parse_args()
 	main(args)
