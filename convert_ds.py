@@ -587,14 +587,13 @@ def load_state_dict_from_zero_checkpoint(model, checkpoint_dir, tag=None):
 def main(args): 
 # Load the checkpoint
 	api = HfApi()
+	os.makedirs('converted_chekpnts', exist_ok=True)
 	raw_checkpoints = [fl for fl in os.listdir('trainer_output/') if os.path.isdir(f'trainer_output/{fl}')]
 	#print(checkpoints)
 	converted_ckpts = [fl for fl in os.listdir('converted_chekpnts/') if os.path.isdir(f'converted_chekpnts/{fl}')]
 	converted_steps = [c.split('-')[-1] for c in converted_ckpts]
 	raw_ckpts = [ckpt for ckpt in raw_checkpoints if ckpt.split('-')[-1] not in converted_steps]
 	
-	if raw_ckpts != []: os.makedirs('converted_chekpnts', exist_ok=True)
-
 	for ck in raw_ckpts:
 		print(ck)
 		ckpt_num = ck.split('-')[-1]
