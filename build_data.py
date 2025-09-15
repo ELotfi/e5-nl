@@ -4,32 +4,17 @@ from argparse import ArgumentParser
 from functools import partial
 
 
-SYN_TRAIN_FILE =  'syn_ret_nl.jsonl' #'syn_ret_nl.jsonl'
 SYN_TASKS = {'sl':{'suf':'', 'type':'retrieval'}, 
 			 'ls': {'suf':'-no_in_batch_neg', 'type':'classification'}, 
 			 'sts':{'suf':'', 'type':'symmetric_sts'}, 
 			 'll':{'suf':'', 'type':'symmetric_clustering'}, 
 			 'ss':{'suf':'', 'type':'symmetric_clustering'}
 			}
-OLD_DATASETS_ = {
-	"HotpotQA-NL": {'id': "Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'hpqa'},
-	"FEVER-NL": {'id':"Ehsanl/Ret-nl", 'ratio':1, 'suf':'', 'config':'fevr' },
-	"MSMARCO-NL": {'id':"Ehsanl/msm_nl_trip", 'ratio':.6, 'suf':''},
-	#"NQ-NL": ("clips/beir-nl-nq",1),
-	"SQuAD-NL": {'id':"Ehsanl/sq_nl_trip", 'ratio':1, 'suf':'-no_in_batch_neg'},
-	"Quora-NL": {'id':"Ehsanl/qr_nl_trip", 'ratio':.3, 'suf':''}
-}
 
 OLD_DATASETS = {
 	"HotpotQA-NL": {'id': "Ehsanl/RetNLMinedkd", 'config':'hpqa', 'ratio':1, 'suf':'', 'group_size':8, 'type':'retrieval'},
 	"FEVER-NL": {'id':"Ehsanl/RetNLMinedkd", 'config':'fevr', 'ratio':1, 'suf':'' , 'group_size':8, 'type':'retrieval'},
 	"MSMARCO-NL": {'id':"Ehsanl/RetNLMinedkd",'config':'mrco', 'ratio':.75, 'suf':'', 'group_size':8, 'type':'retrieval'}
-}
-
-
-CNV_DATASETS = {
-	"QA3-NL": {'id': "Ehsanl/qa3_nl_trip", 'ratio':1, 'suf':''},
-	"ULTRA-NL": {'id':"Ehsanl/ultrac_nl_trip", 'ratio':1, 'suf':''}
 }
 
 os.makedirs('data', exist_ok=True)
