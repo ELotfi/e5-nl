@@ -1,29 +1,11 @@
 export WANDB_MODE=disabled
-
-# train_data="\
-#     ../example_data/retrieval \
-#     ../example_data/sts/sts.jsonl \
-#     ../example_data/classification-no_in_batch_neg \
-#     ../example_data/clustering-no_in_batch_neg "
-    # --output_dir ./test_encoder_only_base_bge-large-en-v1.5_sd \
-    # --overwrite_output_dir \
-    # --deepspeed ../../ds_stage0.json \
-    # --kd_loss_type kl_div \
-	# --query_instruction_for_retrieval 'query: ' \
-	# --passage_instruction_for_retrieval 'passage: ' \
-    # --query_instruction_format '{}{}' \
-	# --passage_instruction_format '{}{}' \
-	# last_token
-	#    --negatives_cross_device \
-
-
 num_train_epochs=1
 per_device_train_batch_size=1024
 num_gpus=1
-model_name_or_path="nicolaebanari/me5-large-trimmed-nl-test"  # Qwen/Qwen3-Embedding-4B
+model_name_or_path=""
 hf_hub_token=''
 
-#python build_data.py  --use_old_data True --use_syn_data True --filter_by_dpn True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
+python build_data.py  --use_old_data True --use_syn_data True --filter_by_dpn True --model $model_name_or_path --token $hf_hub_token #--use_cnv_data False --model $model_name_or_path --token $hf_hub_token --is_llm False 
 
 train_data="data/"
 # set large epochs and small batch size for testing
@@ -39,10 +21,6 @@ model_args="\
 	--trust_remote_code True \
 	--load_bf16 True \
 	--use_flash_attention False \
-	--add_lora False \
-	--lora_rank 16 \
-	--lora_alpha 32 \
-	--lora_dropout 0.05 \
 "
 
 data_args="\
@@ -70,14 +48,14 @@ training_args="\
 	--gradient_checkpointing True \
 	--negatives_cross_device False \
     --dataloader_drop_last True \
-    --warmup_steps 500 \
+    --warmup_ratio .25 \
 	--weight_decay 0.1 \
     --logging_steps 10 \
     --save_total_limit 4 \
     --save_strategy steps \
     --save_steps 0.25 \
 	--push_to_hub True \
-	--hub_model_id  Ehsanl/me5-large-trimmed-old-syn-filt_2ng_llr_1e5 \
+	--hub_model_id   \
 	--hub_token $hf_hub_token \
     --temperature 0.02 \
     --sentence_pooling_method mean \
